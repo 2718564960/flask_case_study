@@ -3,6 +3,7 @@ import config
 from exts import db,mail
 from blueprints import user_bp, qa_bp
 from flask_migrate import Migrate
+import pipreqs
 
 
 app = Flask(__name__)
