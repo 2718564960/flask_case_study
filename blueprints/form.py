@@ -1,14 +1,14 @@
 import wtforms
-from wtforms.validators import length, email, EqualTo, DataRequired
+from wtforms.validators import length, email, EqualTo, DataRequired, InputRequired
 from models import EmailCaptchaModel, UserModel
 from flask import flash
 
 
 class RegisterForm(wtforms.Form):
-    user_name = wtforms.StringField('user_name',validators=[DataRequired(message="bitian"),length(min=3, max=20, message="3")])
+    user_name = wtforms.StringField('user_name',validators=[DataRequired(message="bitian"),length(min=3, max=20, message="用户名长度3-20个字")])
     email = wtforms.StringField('email',validators=[email()])
-    captcha = wtforms.StringField('captcha',validators=[DataRequired(message="bitian"),length(min=4, max=4, message="4")])
-    password = wtforms.StringField(validators=[length(min=6, max=20)])
+    captcha = wtforms.StringField('captcha',validators=[DataRequired(message="bitian"),length(min=4, max=4, message="验证码数量不正确")])
+    password = wtforms.StringField(validators=[length(min=6, max=20, message="密码长度6-20个字")])
     password_confirm = wtforms.StringField(validators=[EqualTo("password",message="hahaha")])
 
 
@@ -32,3 +32,14 @@ class RegisterForm(wtforms.Form):
         if user_model:
             flash("邮箱已经注册！")
             raise wtforms.ValidationError("邮箱已经注册！")
+
+class LoginForm(wtforms.Form):
+    email = wtforms.StringField('email',validators=[email()])
+    password = wtforms.StringField(validators=[length(min=6, max=20,message="密码格式不正确")])
+
+class QuestionForm(wtforms.Form):
+    title = wtforms.StringField(validators=[length(min=3, max=200)])
+    content = wtforms.StringField(validators=[length(min=5)])
+
+class AnswerForm(wtforms.Form):
+    content = wtforms.StringField(validators=[length(min=5)])

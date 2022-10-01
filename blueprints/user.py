@@ -1,19 +1,42 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, g
 from exts import mail, db
 from flask_mail import Message
 from models import EmailCaptchaModel, UserModel
 from datetime import datetime
-from .form import RegisterForm
-from werkzeug.security import generate_password_hash
+from .form import RegisterForm, LoginForm
+from werkzeug.security import generate_password_hash, check_password_hash
 import string
 import random
 
 
 bp = Blueprint("user", __name__, url_prefix="/user")
 
-@bp.route("/login")
+
+@bp.route("/login", methods = ['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    if request.method == "GET":
+        return render_template("login.html")
+    else:
+        form = LoginForm(request.form)
+        print(request.form)
+        if form.validate():
+            email = form.email.data
+            password = form.password.data
+            user = UserModel.query.filter_by(email=email).first()
+            if user and check_password_hash(user.password, password):
+                session['user_id'] = user.id
+                return redirect("/")
+            else:
+                flash("邮箱和密码不匹配！")
+                return redirect(url_for("user.login"))
+        else:
+            flash("邮箱和密码格式错误！")
+            return redirect(url_for("user.login"))
+
+@bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("user.login"))
 
 @bp.route("/register", methods = ['GET', 'POST'])
 def register():
@@ -39,10 +62,10 @@ def register():
             return render_template("register.html")
 
 
-@bp.route("/mail")
+@bp.route("/captcha", methods=["POST"])
 def get_captcha():
     # GET,POST
-    email = request.args.get("email")
+    email = request.form.get("email")
     letters = string.ascii_letters + string.digits
     captcha = "".join(random.sample(letters,4))
     print(captcha)
@@ -62,6 +85,7 @@ def get_captcha():
             captcha_model = EmailCaptchaModel(email=email, captcha=captcha)
             db.session.add(captcha_model)
             db.session.commit()
-        return "success"
+        return jsonify({"code": 200})
     else:
-        return "no emails"
+        # code:400
+        return jsonify({"code": 400, "message":"请先传递邮箱"})
