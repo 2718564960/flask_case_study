@@ -27,7 +27,7 @@ flask db upgrade
 ```
 [ORM迁移知识链接](https://www.zlkt.net/book/detail/10/297)
 
-祝你学习开心，有时间后续再更新一下redis等内容！
+祝你学习开心，有时间后续再更新一下redis和搜索功能等内容！
 
 
 
